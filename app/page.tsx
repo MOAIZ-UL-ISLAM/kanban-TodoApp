@@ -4,7 +4,7 @@ export default function Home() {
   return (
 
     <div className="px-28 my-10">
-      <h1 className="font-bold text-3xl"> Kanban Board</h1>
+      <h1 className="font-bold text-3xl">Kanban Board</h1>
       <div>
         <MainContainer />
       </div>

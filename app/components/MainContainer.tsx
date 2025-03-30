@@ -1,23 +1,52 @@
 'use client';
-
-import { Button } from '@/components/ui/button'
-import React, { useState } from 'react'
-import { SquarePlus } from 'lucide-react'
-import AddEditContainer from './AddEditContainer'
+import { Button } from '@/components/ui/button';
+import React, { useState } from 'react';
+import { SquarePlus } from 'lucide-react';
+import AddEditContainer from './AddEditContainer';
 import TaskContainer from './TaskContainer';
 
-
 const MainContainer = () => {
-    const [showContainerForm, setShowContainerForm] = useState(false)
-    const [containers, setContainers] = useState<string[]>([])
+    const [showContainerForm, setShowContainerForm] = useState(false);
+    const [containers, setContainers] = useState<string[]>([]);
+    const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+
     const handleAddContainer = (name: string) => {
         if (!name.trim()) return;
-        setContainers([...containers, name])
-        setShowContainerForm(false)
-    }
+        setContainers([...containers, name]);
+        setShowContainerForm(false);
+    };
+
+    const handleDeleteContainer = (name: string) => {
+        setContainers((prevContainers) => prevContainers.filter(container => container !== name));
+    };
+
+    const handleEditContainer = (oldName: string, newName: string) => {
+        setContainers((prevContainers) =>
+            prevContainers.map((container) => (container === oldName ? newName : container))
+        );
+    };
+
+    const handleDragStart = (index: number) => {
+        setDraggedIndex(index);
+    };
+
+    const handleDrop = (index: number) => {
+        if (draggedIndex === null || draggedIndex === index) return;
+
+        const updatedContainers = [...containers];
+        const draggedItem = updatedContainers[draggedIndex];
+
+        // Remove dragged item and insert at new position
+        updatedContainers.splice(draggedIndex, 1);
+        updatedContainers.splice(index, 0, draggedItem);
+
+        setContainers(updatedContainers);
+        setDraggedIndex(null);
+    };
+
     return (
         <>
-            <div className='mt-8'>
+            <div className="mt-8 flex flex-col items-center justify-center">
                 {showContainerForm ? (
                     <AddEditContainer
                         onCancel={() => setShowContainerForm(false)}
@@ -34,14 +63,23 @@ const MainContainer = () => {
                 )}
 
                 {/* Render all created containers */}
-                <div className="mt-4 space-y-4 flex w-full gap-4">
+                <div className="space-y-4 flex w-full gap-4">
                     {containers.map((name, index) => (
-                        <TaskContainer key={index} containerName={name} />
+                        <TaskContainer
+                            key={index}
+                            containerName={name}
+                            index={index}
+                            onEdit={handleEditContainer}
+                            onDelete={handleDeleteContainer}
+                            onDragStart={handleDragStart}
+                            onDrop={handleDrop}
+                            isDragging={index === draggedIndex}
+                        />
                     ))}
                 </div>
             </div>
         </>
-    )
-}
+    );
+};
 
-export default MainContainer
+export default MainContainer;
